@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Persons</title>
+  <!-- reference css -->
+  <link rel="stylesheet" href="/public/css/main.css" />
+</head>
+
+<%include partials/nav.ejs%>
+
+  <!-- reference jquery and socket.io -->
+  <script type="text/javascript" src="/public/jquery.min.js"></script>
+  <script type="text/javascript" src="/public/jquery.form.min.js"></script>
+  <script type="text/javascript" src="/public/socket.io.js"></script>
+
+  <body>
+    <h1>Persons Database</h1>
+    <hr>
+    <div id='FindPerson' class="container">
+      <h3>Persons Table</h3>
+      <hr>
+      <!-- define table -->
+      <table>
+        <tr>
+          <th>National ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Gender</th>
+          <th>Date of Birth</th>
+          <th>Download Image</th>
+          <th>Ethereum Address</th>
+        </tr>
+        <!-- use ejs to populate table -->
+        <% for (var i = 0; i < Persons.FirstName.length; i++) {%>
+          <tr>
+            <td>
+              <%- Persons.NationalID[i] %>
+            </td>
+            <td>
+              <%- Persons.FirstName[i] %>
+            </td>
+            <td>
+              <%- Persons.LastName[i] %>
+            </td>
+            <td>
+              <%- Persons.Gender[i] %>
+            </td>
+            <td>
+              <%- Persons.DateOfBirth[i] %>
+            </td>
+            <td>
+              <%- Persons.DownloadImage[i] %>
+            </td>
+            <td>
+              <%- Persons.EthereumAddress[i] %>
+            </td>
+          </tr>
+          <%}%>
+      </table>
+
+      <hr>
+
+      <h3>Find Person</h3>
+      <!-- submit person id and populate div -->
+      <fieldset>
+
+        <form class="" action="/FindPerson" method="post">
+          <label for="FindNationalID">National ID</label>
+          <input id="FindNationalID" type="text" name="FindNationalID"><br>
+
+          <button id="ConfirmFind" name="ConfirmFind">Find</button>
+        </form>
+
+        <div style="width: 100%; overflow: hidden;">
+          <div style="width: 600px; float: left;">
+            <span>First Name: </span><span id='PersonFirstName'></span><br>
+            <span>Last Name: </span><span id='PersonLastName'></span><br>
+            <span>Gender: </span><span id='PersonGender'></span><br>
+            <span>Date of Birth: </span><span id='PersonDateOfBirth'></span><br>
+            <span>Ethereum Address: </span><span id='PersonAddress'></span><br>
+          </div>
+          <div style="margin-left: 620px;">
+            <img src="/public/photo.png" width="145" height="126" alt="PersonPic">
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <hr>
+    <!-- form to register new person -->
+    <div id='RegisterNewPerson' class="container">
+      <h3>Register New Person</h3>
+
+      <fieldset>
+        <form id="uploadForm" action="/SubmitNewPerson" enctype="multipart/form-data" method="post">
+
+          <label for="SubmitNationalID">National ID</label>
+          <input id="SubmitNationalID" type="text" name="SubmitNationalID"><br>
+
+          <label for="SubmitFirstName">First Name</label>
+          <input id="SubmitFirstName" type="text" name="SubmitFirstName"><br>
+
+          <label for="SubmitLastName">Last Name</label>
+          <input id="SubmitLastName" type="text" name="SubmitLastName"><br>
+
+          <label for="SubmitGender">Gender</label>
+          <input list="SubmitGender" name="SubmitGender">
+          <datalist id="SubmitGender">
+            <option value="Male">
+            <option value="Female">
+          </datalist><br><br>
+
+          <label for="SubmitDateOfBirth">Date Of Birth</label>
+          <input id="SubmitDateOfBirth" type="date" name="SubmitDateOfBirth"><br><br>
+
+          <label for="SubmitAddress">Ethereum Address</label>
+          <input id="SubmitAddress" type="text" name="SubmitAddress"><br>
+
+          <label for="SubmitPhoto">Upload Photo</label>
+          <input id="SubmitPhoto" type="file" name="SubmitPhoto"></br>
+          <p></p>
+          <button type="submit" id="SubmitPersonConfirmation" name="SubmitPersonConfirmation">Register Person</button><br>
+          <span id="status"></span>
+        </form>
+
+        <br>
+      </fieldset>
+    </div>
+  </body>
+
+  <script type="text/javascript">
+    // submit document to upload to Sia
+    $(document).ready(function() {
+
+      $('#uploadForm').submit(function() {
+        $("#status").empty().text("File Uploading");
+        $(this).ajaxSubmit({
+
+          error: function(result) {
+            status('Error: ' + JSON.stringify(result));
+          },
+
+          success: function(response) {
+            $("#status").empty().text(response);
+            alert('Registration successful. The transaction ID is: ' + response);
+            console.log(response);
+          }
+        });
+        return false;
+      });
+      // submit person id to retreive details
+      $('#ConfirmFind').click(function() {
+        alert('Get Person Details');
+        $.ajax({
+          type: 'POST',
+          url: "/findPerson",
+          dataType: 'json',
+          data: {
+            TransactionId: $('#FindNationalID').val()
+          },
+          success: function(successResponse) {
+            alert('Transaction Details: ' +
+              JSON.stringify(successResponse));
+            $('#PersonFirstName').html(successResponse.PersonFirstName);
+            $('#PersonLastName').html(successResponse.PersonLastName);
+            $('#PersonGender').html(successResponse.PersonGender);
+            $('#PersonDateOfBirth').html(successResponse.PersonDateOfBirth);
+            $('#PersonImageLink').html(successResponse.PersonImageLink);
+            $('#PersonAddress').html(successResponse.PersonAddress);
+
+          },
+          error: function(errorResponse) {
+            alert('Sorry. There was an error: ' + JSON.stringify(errorResponse));
+          }
+
+        });
+        return false;
+      });
+    });
+  </script>
+  <!-- include footer -->
+  <%include partials/footer.ejs%>
+
+</html>

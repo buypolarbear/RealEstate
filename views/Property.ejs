@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Property</title>
+  <link rel="stylesheet" href="/public/css/main.css" />
+</head>
+
+<%include partials/nav.ejs%>
+
+  <script type="text/javascript" src="/public/jquery.min.js"></script>
+  <script type="text/javascript" src="/public/jquery.form.min.js"></script>
+
+  <body>
+    <h1>Property Database</h1>
+    <hr>
+    <div id='FindProperty' class="container">
+      <h3>Properties Table</h3>
+      <hr>
+      <table>
+        <tr>
+          <th>Property ID</th>
+          <th>Owner National ID</th>
+          <th>Property Type</th>
+          <th>Address</th>
+          <th>City</th>
+          <th>Zip Code</th>
+          <th>Sale Value</th>
+        </tr>
+        <% for (var i = 0; i < Properties.PropertyIDArray.length; i++) {%>
+          <tr>
+            <td>
+              <%- Properties.PropertyIDArray[i] %>
+            </td>
+            <td>
+              <%- Properties.NationalIDArray[i] %>
+            </td>
+            <td>
+              <%- Properties.PropertyTypeArray[i] %>
+            </td>
+            <td>
+              <%- Properties.AddressArray[i] %>
+            </td>
+            <td>
+              <%- Properties.CityArray[i] %>
+            </td>
+            <td>
+              <%- Properties.ZipCodeArray[i] %>
+            </td>
+            <td>
+              <%- Properties.SaleValueArray[i] %>
+            </td>
+          </tr>
+          <%}%>
+      </table>
+
+      <hr>
+      <h3>Find Property</h3>
+
+      <fieldset>
+
+        <form class="" action="/FindProperty" method="post">
+          <label for="FindPropertyID">Property ID</label>
+          <input id="FindPropertyID" type="text" name="FindPropertyID"><br>
+
+          <button id="ConfirmFind" name="ConfirmFind">Find</button>
+        </form>
+
+        <div style="width: 100%; overflow: hidden;">
+          <div style="width: 600px; float: left;">
+            <span>Property Type: </span><span id='PropertyType'></span><br>
+            <span>Address: </span><span id='Address'></span><br>
+            <span>City: </span><span id='City'></span><br>
+            <span>Zip/Post Code: </span><span id='ZipCode'></span><br>
+            <span>Sale Value: </span><span id='SaleValue'></span><br>
+          </div>
+          <div style="margin-left: 620px;">
+            <img src="/public/property.jpg" width="145" height="126" alt="PersonPic">
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <hr>
+    <div id='RegisterNewProperty' class="container">
+      <h3>Register New Property</h3>
+
+      <fieldset>
+        <form id="uploadForm" action="/SubmitNewProperty" enctype="multipart/form-data" method="post">
+
+          <label for="PersonNationalID">Owner National ID</label>
+          <select id="PersonNationalID" name="PersonNationalID" value=<%- JSON.stringify(Persons.NationalID) %>>
+              <%for(var i = 0; i < Persons.NationalID.length; i++){%>
+                <option value="<%= Persons.NationalID[i] %>"><%= Persons.NationalID[i] %></option>
+              <% } %>
+          </select><br>
+
+          <label for="SubmitPropertyID">Property ID</label>
+          <input id="SubmitPropertyID" type="text" name="SubmitPropertyID"><br>
+
+          <label for="SubmitPropertyType">Property Type</label>
+          <input list="SubmitPropertyType" name="SubmitPropertyType">
+          <datalist id="SubmitPropertyType">
+            <option value="House">
+            <option value="Apartment">
+            <option value="Land">
+          </datalist><br><br>
+
+
+
+          <label for="SubmitAddress">Address</label>
+          <input id="SubmitAddress" type="text" name="SubmitAddress"><br>
+
+          <label for="SubmitCity">City</label>
+          <input id="SubmitCity" type="text" name="SubmitCity"><br>
+
+          <label for="SubmitZipCode">Zip/Post Code</label>
+          <input id="SubmitZipCode" type="text" name="SubmitZipCode"><br>
+
+          <label for="SubmitCountry">Country</label>
+          <input list="SubmitCountry" name="SubmitCountry">
+          <datalist id="SubmitCountry">
+            <option value="US">
+            <option value="UK">
+            <option value="Canada">
+          </datalist><br><br>
+
+          <label for="SubmitPropertyPhoto">Upload Property Photo</label>
+          <input id="SubmitPropertyPhoto" type="file" name="SubmitPropertyPhoto"></br>
+
+          <label for="SubmitSaleValue">Sale Value</label>
+          <input id="SubmitSaleValue" type="number" name="SubmitSaleValue"><br><br>
+          <p></p>
+          <button type="submit" id="SubmitPropertyConfirmation" name="SubmitPropertyConfirmation">Register Property</button><br>
+          <span id="status"></span>
+        </form>
+
+        <br>
+      </fieldset>
+    </div>
+  </body>
+  <script type="text/javascript">
+    $(document).ready(function() {
+
+      $('#uploadForm').submit(function() {
+        $("#status").empty().text("File Uploading");
+        $(this).ajaxSubmit({
+
+          error: function(result) {
+            status('Error: ' + JSON.stringify(result));
+          },
+
+          success: function(response) {
+            $("#status").empty().text(response);
+            console.log(response);
+          }
+        });
+        return false;
+      });
+
+      $('#ConfirmFind').click(function() {
+        $.ajax({
+          type: 'POST',
+          url: "/findProperty",
+          dataType: 'json',
+          data: {
+            TransactionId: $('#FindPropertyID').val()
+          },
+          success: function(successResponse) {
+
+            $('#PropertyType').html(successResponse.PropertyType);
+            $('#Address').html(successResponse.Address);
+            $('#City').html(successResponse.City);
+            $('#ZipCode').html(successResponse.ZipCode);
+            $('#SaleValue').html(successResponse.SaleValue);
+
+          },
+          error: function(errorResponse) {
+            alert('Sorry. There was an error: ' + JSON.stringify(errorResponse));
+          }
+
+        });
+        return false;
+      });
+    });
+  </script>
+  <%include partials/footer.ejs%>
+
+</html>

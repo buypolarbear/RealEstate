@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Home</title>
+  <link rel="stylesheet" href="/public/css/main.css" />
+</head>
+<%include partials/nav.ejs%>
+
+  <script type="text/javascript" src="/public/jquery.min.js"></script>
+  <script type="text/javascript" src="/public/socket.io.js"></script>
+
+  <body>
+    <h1>Real Estate Contract Management System</h1>
+    <hr>
+    <div id='PersonsCount' class="container">
+      <h3>Number of Current Persons</h3>
+      <span id='ActiveCurrentPersonsSpan'></span>
+    </div>
+    <hr>
+    <hr>
+    <div id='ActiveSalesCount' class="container">
+      <h3>Number of Property Listings</h3>
+      <span id='ActiveSalesCountSpan'></span>
+    </div>
+    <hr>
+  </body>
+
+  <script type="text/javascript">
+    //Prepare to receive SOCKET.IO notifications
+    var socket = io("http://localhost:3000");
+    socket.on("connect", function() {
+      socket.on("message", function(msg) {
+        //If a Persons Counter notification, update span
+        if (msg[0] == 'PersonsCounter') {
+          $("#ActiveCurrentPersonsSpan").text(msg[0]);
+        } else {
+          //Else update number of sales span
+          $("#ActiveSalesCountSpan").text(msg[0]);
+        }
+
+      });
+    });
+  </script>
+  <%include partials/footer.ejs%>
+
+</html>
